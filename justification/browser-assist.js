@@ -6,7 +6,7 @@
                 display: 'inline', left: '-8000px'
             })
         $('body').append(ruler);
-        var spacewidth = ruler.html('&nbsp;').width();
+        var spacewidth = ruler.html('&#160;').width();
         var format = formatter(function (str) {
             if (str !== ' ') {
                 return ruler.text(str).width();
@@ -56,6 +56,7 @@
                 array.length -1) output += '<span class="discretionary">-</span>';
 			});
             output += '</span>';
+            console.log(output);
 			$(identifier).append(output);
 		});
         ruler.remove();
@@ -67,3 +68,4 @@ function Calzone(sel, options) {
         $(sel).resize(function() { browserAssistTypeset(this, 'justify', 2, options); });
     });
 }
+

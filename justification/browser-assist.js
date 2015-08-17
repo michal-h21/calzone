@@ -1,4 +1,20 @@
+
+
 	function browserAssistTypeset(identifier, type, tolerance, options) {
+function walkDOM(main) {
+    var arr = [];
+    var loop = function(main) {
+        do {
+            if(main.nodeType == 1)
+                arr.push(main);
+            if(main.hasChildNodes())
+                loop(main.firstChild);
+        }
+        while (main = main.nextSibling);
+    }
+    loop(main);
+    return arr;
+}
         var ruler = $(identifier).clone().css({
                 visibility: 'hidden', position: 'absolute',
                 top: '-8000px', width: 'auto',

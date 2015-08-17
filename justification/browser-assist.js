@@ -1,26 +1,36 @@
 
 
 function browserAssistTypeset(identifier, type, tolerance, options) {
-  function walkDOM(main) {
+  var hiddenCopy = function(identifier){
+    return $(identifier).clone().css({
+      visibility: 'hidden', position: 'absolute',
+      top: '-8000px', width: 'auto',
+      "text-indent": "0px",
+      display: 'inline', left: '-8000px'
+    })
+  };
+  var walkDOM = function (main) {
+    // based on http://stackoverflow.com/a/8747184
     var arr = [];
+    console.log(main);
     var loop = function(main) {
+      var curr = hiddenCopy(main);
       do {
-        if(main.nodeType == 1)
-          arr.push(main);
+        if(main.nodeType == 3){
+          var text = main.data;
+          console.log(text);
+
+        }
         if(main.hasChildNodes())
           loop(main.firstChild);
       }
       while (main = main.nextSibling);
     }
-    loop(main);
+    loop(main.firstChild);
     return arr;
-  }
-  var ruler = $(identifier).clone().css({
-    visibility: 'hidden', position: 'absolute',
-    top: '-8000px', width: 'auto',
-    "text-indent": "0px",
-    display: 'inline', left: '-8000px'
-  })
+  };
+  walkDOM(identifier);
+  var ruler = hiddenCopy(identifier)
   $('body').append(ruler);
   var spacewidth = ruler.html('&#160;').width();
   var format = formatter(function (str) {
@@ -72,7 +82,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
           array.length -1) output += '<span class="discretionary">-</span>';
     });
     output += '</span>';
-    console.log(output);
+    //console.log(output);
     $(identifier).append(output);
   });
   ruler.remove();

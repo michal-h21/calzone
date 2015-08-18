@@ -1,4 +1,25 @@
 
+var makeLine = function(ratio){
+  var span = document.createElement("span");
+  span.style["text-indent"]  = 0; 
+  span.style["word-spacing"] = ratio.toFixed(3) + 'px';
+  span.style["display"]      = "inline-block";
+  span.style["white-space"]  = "nowrap";
+  return span;
+}
+
+var addText = function(p, text){
+  var child = document.createTextNode(text);
+  p.appendChild(child);
+}
+
+var addDiscretionary = function(p){
+  var disc = document.createElement("span");
+  disc.setAttribute("class", "discretionary");
+  var hyphen = document.createTextNode("-");
+  disc.appendChild(hyphen);
+  p.appendChild(disc);
+}
 
 function browserAssistTypeset(identifier, type, tolerance, options) {
   var hiddenCopy = function(identifier){
@@ -12,13 +33,19 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
   var walkDOM = function (main) {
     // based on http://stackoverflow.com/a/8747184
     var arr = [];
+    var positions = [];
     console.log(main);
+    var pos = 0;
     var loop = function(main) {
       var curr = hiddenCopy(main);
       do {
-        if(main.nodeType == 3){
+        if(main.nodeType == 1){
+
+        } else if(main.nodeType == 3){
           var text = main.data;
           arr.push(text);
+          pos = pos + text.length;
+          console.log(pos);
         }
         if(main.hasChildNodes())
           loop(main.firstChild);
@@ -73,18 +100,24 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
     var spaceShrink = spacewidth * 3 / 9;
     spaceStretch = spacewidth * 3 / 6;
     ratio = line.ratio * (line.ratio < 0 ? spaceShrink : spaceStretch);
-
-    var output = '<span style="text-indent:0; word-spacing: ' + ratio.toFixed(3) + 'px; display: inline-block; white-space: nowrap;">'; 
+    var span = makeLine(ratio);
     line.nodes.forEach(function (n,index,array) { 
-      if (n.type === 'box') output += n.value;
-      else if (n.type === 'glue') output += " ";
+      if (n.type === 'box'){ 
+        addText(span, n.value);
+      }
+      else if (n.type === 'glue'){ 
+        addText(span, " ");
+      }
       else if (n.type === 'penalty' && n.penalty ==
           linebreak.defaults.hyphenpenalty && index ==
-          array.length -1) output += '<span class="discretionary">-</span>';
+          array.length -1){
+        addDiscretionary(span);
+      }
     });
-    output += '</span>';
+    console.log(span);
     //console.log(output);
-    $(identifier).append(output);
+    //$(identifier).append(output);
+    identifier.appendChild(span);
   });
   ruler.remove();
 }

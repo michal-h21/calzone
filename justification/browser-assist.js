@@ -18,8 +18,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
       do {
         if(main.nodeType == 3){
           var text = main.data;
-          console.log(text);
-
+          arr.push(text);
         }
         if(main.hasChildNodes())
           loop(main.firstChild);
@@ -27,9 +26,10 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
       while (main = main.nextSibling);
     }
     loop(main.firstChild);
-    return arr;
+    var text = arr.join("");
+    console.log(text);
+    return text;
   };
-  walkDOM(identifier);
   var ruler = hiddenCopy(identifier)
   $('body').append(ruler);
   var spacewidth = ruler.html('&#160;').width();
@@ -41,8 +41,9 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
     }
   });
 
-  var text = $(identifier)[0]._originalText ? $(identifier)[0]._originalText : $(identifier).text();
-  if (!$(identifier)[0]._originalText) $(identifier)[0]._originalText = text;
+  //var text = $(identifier)[0]._originalText ? $(identifier)[0]._originalText : $(identifier).text();
+  // if (!$(identifier)[0]._originalText) $(identifier)[0]._originalText = text;
+  var  text = walkDOM(identifier);
   var width = $(identifier).width();
   var ti    = parseFloat($(identifier).css("text-indent"));
   var nodes = format[type](text),

@@ -21,14 +21,34 @@ var addDiscretionary = function(p){
   p.appendChild(disc);
 }
 
+var html = function(p, text){
+  var t =  document.createTextNode(text);
+  while(p.firstChild){
+    p.removeChild(p.firstChild);
+  }
+  p.appendChild(t);
+  return p;
+}
+
 function browserAssistTypeset(identifier, type, tolerance, options) {
   var hiddenCopy = function(identifier){
-    return $(identifier).clone().css({
+    // return $(identifier).clone().css({
+    //   visibility: 'hidden', position: 'absolute',
+    //   top: '-8000px', width: 'auto',
+    //   "text-indent": "0px",
+    //   display: 'inline', left: '-8000px'
+    // })
+    var newnode = identifier.cloneNode();
+    var properties = {
       visibility: 'hidden', position: 'absolute',
       top: '-8000px', width: 'auto',
       "text-indent": "0px",
       display: 'inline', left: '-8000px'
-    })
+    }
+    for(var key in properties){
+      newnode.style[key] = properties[key];
+    }
+    return newnode;
   };
   var walkDOM = function (main) {
     // based on http://stackoverflow.com/a/8747184
@@ -59,7 +79,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
     loop(main.firstChild, nodeList);
     var text = arr.join("");
     console.log(text);
-    var that = {"text":  text, "main": main, "positions" : positions, 
+    var that = {"text":  text, "main":main, "positions" : positions, 
       "index": 0, "nextPos":0,"currPos" : 0};
     that.reset = function(){
       that.index = 0;
@@ -72,6 +92,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
           if(a.pos > that.index) {
             that.nextPos = a.pos;
             that.currPos = i;
+            console.log("hledame pos " + i);
             return true;
           }
           i++;
@@ -82,7 +103,14 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
       var index = that.index;
       that.index = that.text.indexOf(text, index);
       that.nextPos();
-      console.log(that.index+ " " + text);
+      var i  = that.currPos;
+      var newnode = html(hiddenCopy(that.main), text);
+      document.body.appendChild(newnode);
+      var width = newnode.clientWidth;
+      document.body.removeChild(newnode);
+      // console.log(that.positions[i].nodes+ " " + i);
+      // console.log(that.index+ " " + text);
+      return width;
     };
     that.forPositions = function(){
       that.positions.forEach(function(a){
@@ -94,12 +122,15 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
 
   var textObject = walkDOM(identifier);
   var ruler = hiddenCopy(identifier)
-    $('body').append(ruler);
-  var spacewidth = ruler.html('&#160;').width();
+  //  $('body').append(ruler);
+  ruler = html(ruler,'\u00A0');
+  document.body.appendChild(ruler);
+  //var spacewidth = ruler.html('&#160;').width();
+  var spacewidth = ruler.clientWidth;
   var format = formatter(function (str) {
     if (str !== ' ') {
-      textObject.getWidth(str);
-      return ruler.text(str).width();
+      // var oldmethod = html(ruler, str).clientWidth;
+      return textObject.getWidth(str);
     } else {
       return spacewidth; 
     }
@@ -108,14 +139,18 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
   //var text = $(identifier)[0]._originalText ? $(identifier)[0]._originalText : $(identifier).text();
   // if (!$(identifier)[0]._originalText) $(identifier)[0]._originalText = text;
   var  text = textObject.text;
-  var width = $(identifier).width();
-  var ti    = parseFloat($(identifier).css("text-indent"));
+  //var width = $(identifier).width();
+  var width = identifier.clientWidth;
+  var identstyle = window.getComputedStyle(identifier,null);
+  var ti = parseFloat(identstyle["text-indent"]);
+  //var ti = parseFloat($(identifier).css("text-indent"));
   var nodes = format[type](text),
   breaks = linebreak(nodes, [width-ti, width], {tolerance: tolerance}),
     lines = [],
     i, point, r, lineStart;
   if (!breaks.length) return; 
-  $(identifier).empty();
+  //$(identifier).empty();
+  html(identifier,"");
   // Iterate through the line breaks, and split the nodes at the
   // correct point.
   for (i = 1; i < breaks.length; i += 1) {

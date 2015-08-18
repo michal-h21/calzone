@@ -59,16 +59,46 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
     loop(main.firstChild, nodeList);
     var text = arr.join("");
     console.log(text);
-    positions.forEach(function(a){
-      console.log(a.nodes);
-    });
-    return {"text":  text, "main": main, "positions" : positions};
+    var that = {"text":  text, "main": main, "positions" : positions, 
+      "index": 0, "nextPos":0,"currPos" : 0};
+    that.reset = function(){
+      that.index = 0;
+      that.nextPos = -1;
+    };
+    that. nextPos = function(){
+      if(that.index > that.nextPos){
+        var i = 0;
+        var status = that.positions.some(function(a){
+          if(a.pos > that.index) {
+            that.nextPos = a.pos;
+            that.currPos = i;
+            return true;
+          }
+          i++;
+        });
+      }
+    }
+    that.getWidth = function(text){
+      var index = that.index;
+      that.index = that.text.indexOf(text, index);
+      that.nextPos();
+      console.log(that.index+ " " + text);
+    };
+    that.forPositions = function(){
+      that.positions.forEach(function(a){
+        console.log(a);
+      });
+    } 
+    return that;
   };
+
+  var textObject = walkDOM(identifier);
   var ruler = hiddenCopy(identifier)
-  $('body').append(ruler);
+    $('body').append(ruler);
   var spacewidth = ruler.html('&#160;').width();
   var format = formatter(function (str) {
     if (str !== ' ') {
+      textObject.getWidth(str);
       return ruler.text(str).width();
     } else {
       return spacewidth; 
@@ -77,7 +107,6 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
 
   //var text = $(identifier)[0]._originalText ? $(identifier)[0]._originalText : $(identifier).text();
   // if (!$(identifier)[0]._originalText) $(identifier)[0]._originalText = text;
-  var textObject = walkDOM(identifier);
   var  text = textObject.text;
   var width = $(identifier).width();
   var ti    = parseFloat($(identifier).css("text-indent"));

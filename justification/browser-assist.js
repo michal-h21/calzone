@@ -34,28 +34,35 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
     // based on http://stackoverflow.com/a/8747184
     var arr = [];
     var positions = [];
-    console.log(main);
+    // console.log(main);
     var pos = 0;
-    var loop = function(main) {
-      var curr = hiddenCopy(main);
+    var nodeList = [];
+    var loop = function(main, nodes) {
+      //var curr = hiddenCopy(main);
       do {
         if(main.nodeType == 1){
 
         } else if(main.nodeType == 3){
           var text = main.data;
+          positions.push({"pos" : pos, "nodes" : nodes.slice()});
           arr.push(text);
           pos = pos + text.length;
-          console.log(pos);
         }
-        if(main.hasChildNodes())
-          loop(main.firstChild);
+        if(main.hasChildNodes()){
+          var copy = nodes.slice();
+          copy.push(hiddenCopy(main));
+          loop(main.firstChild, copy);
+        }
       }
       while (main = main.nextSibling);
     }
-    loop(main.firstChild);
+    loop(main.firstChild, nodeList);
     var text = arr.join("");
     console.log(text);
-    return text;
+    positions.forEach(function(a){
+      console.log(a.nodes);
+    });
+    return {"text":  text, "main": main, "positions" : positions};
   };
   var ruler = hiddenCopy(identifier)
   $('body').append(ruler);
@@ -70,7 +77,8 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
 
   //var text = $(identifier)[0]._originalText ? $(identifier)[0]._originalText : $(identifier).text();
   // if (!$(identifier)[0]._originalText) $(identifier)[0]._originalText = text;
-  var  text = walkDOM(identifier);
+  var textObject = walkDOM(identifier);
+  var  text = textObject.text;
   var width = $(identifier).width();
   var ti    = parseFloat($(identifier).css("text-indent"));
   var nodes = format[type](text),
@@ -114,7 +122,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
         addDiscretionary(span);
       }
     });
-    console.log(span);
+    //console.log(span);
     //console.log(output);
     //$(identifier).append(output);
     identifier.appendChild(span);

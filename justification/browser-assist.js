@@ -22,7 +22,7 @@ var addDiscretionary = function(p){
   p.appendChild(disc);
 }
 
-function html(p, text){
+var html= function (p, text){
   var t =  document.createTextNode(text);
   while(p.firstChild){
     p.removeChild(p.firstChild);
@@ -85,39 +85,50 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
     that.reset = function(){
       that.index = 0;
       that.nextPos = -1;
+      that.currPos = 0;
     };
-    that. nextPos = function(){
+    that.findNextPos = function(text){
+      var index = that.index;
+      that.index = that.text.indexOf(text, index);
+      // find starting position of next node
       if(that.index > that.nextPos){
         var i = 0;
         var status = that.positions.some(function(a){
           if(a.pos > that.index) {
             that.nextPos = a.pos;
             that.currPos = i;
-            console.log("hledame pos " + i);
+            //console.log("hledame pos " + i);
             return true;
           }
           i++;
         });
       }
     }
-    that.getWidth = function(text){
-      var index = that.index;
-      that.index = that.text.indexOf(text, index);
-      that.nextPos();
+    that.getCurrentNodes = function(){
       var i  = that.currPos;
-      var newnode = html(hiddenCopy(that.main), text);
+      return that.positions[i].nodes;
+    }
+    that.getCurrentNode = function(){
+      var nodes = that.getCurrentNodes();
+      if(nodes.length > 0){
+        return nodes[nodes.length - 1];
+      } else {
+        return that.main; 
+      }
+    }
+    that.getWidth = function(text){
+      that.findNextPos(text);
+      var newnode = html(hiddenCopy(that.getCurrentNode()), text);;
       document.body.appendChild(newnode);
       var width = newnode.clientWidth;
       document.body.removeChild(newnode);
-      // console.log(that.positions[i].nodes+ " " + i);
-      // console.log(that.index+ " " + text);
+      //console.log(that.positions[i].nodes+ " " + i);
+      //console.log(that.index+ " " + text);
       return width;
     };
-    that.forPositions = function(){
-      that.positions.forEach(function(a){
-        console.log(a);
-      });
-    } 
+    that.addNodes = function(p, text){
+    
+    }
     return that;
   };
 
@@ -168,6 +179,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
     lines.push({ratio: r, nodes: nodes.slice(lineStart, point + 1), position: point});
     lineStart = point;
   }
+  textObject.reset();
 
   lines.forEach(function (line, index,array) {
     var spaceShrink = spacewidth * 3 / 9;
@@ -176,6 +188,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
     var span = makeLine(ratio);
     line.nodes.forEach(function (n,index,array) { 
       if (n.type === 'box'){ 
+        textObject.addNodes(span, n.value);
         addText(span, n.value);
       }
       else if (n.type === 'glue'){ 

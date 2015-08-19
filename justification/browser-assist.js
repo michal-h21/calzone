@@ -1,6 +1,7 @@
 
 var makeLine = function(ratio){
   var span = document.createElement("span");
+  span.setAttribute("class","calzone-line");
   span.style["text-indent"]  = 0; 
   span.style["word-spacing"] = ratio.toFixed(3) + 'px';
   span.style["display"]      = "inline-block";
@@ -21,7 +22,7 @@ var addDiscretionary = function(p){
   p.appendChild(disc);
 }
 
-var html = function(p, text){
+function html(p, text){
   var t =  document.createTextNode(text);
   while(p.firstChild){
     p.removeChild(p.firstChild);
@@ -193,11 +194,39 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
   });
   ruler.remove();
 }
+
+
 function Calzone(sel, options) {
-  if (!options) { options = { widow: 2, orphan: 2 } }
-  $(document).ready(function(){
-    $(sel).each(function(i,el) { browserAssistTypeset(el, 'justify', 2, options) });
-    $(sel).resize(function() { browserAssistTypeset(this, 'justify', 2, options); });
-  });
+    var el = document.querySelectorAll(sel);
+    if (!options) { options = { widow: 2, orphan: 2 } }
+    var process = function(ev){
+        for(var i = 0; i < el.length; ++i){
+          var item = el[i];
+          browserAssistTypeset(item, 'justify', 2, options) 
+        }
+    };
+    document.addEventListener("DOMContentLoaded", process);
+    // resize callback doesn't work. 
+    // it would be too resource expensive anyway
+    // at this moment, when the paragraph is wider than window, it overflows
+    // document.addEventListener("resize", function(){
+    //     for(var i = 0; i < el.length; ++i){
+    //        var lines = el[i].querySelectorAll(".calzone-line");
+    //        for(var x = 0; x < lines.length; ++x){
+    //          lines[x].style["word-spacing"] = "auto";
+    //        }
+    //     }
+    //     process();
+    //     console.log("resize");
+    //  }, false);
 }
+
+// Original Calzone using jQuery
+// function Calzone(sel, options) {
+//   if (!options) { options = { widow: 2, orphan: 2 } }
+//   $(document).ready(function(){
+//     $(sel).each(function(i,el) { browserAssistTypeset(el, 'justify', 2, options) });
+//     $(sel).resize(function() { browserAssistTypeset(this, 'justify', 2, options); });
+//   });
+// }
 

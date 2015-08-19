@@ -81,11 +81,15 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
     var text = arr.join("");
     console.log(text);
     var that = {"text":  text, "main":main, "positions" : positions, 
-      "index": 0, "nextPos":0,"currPos" : 0};
+      "index": 0, "nextPos":0,"currPos" : 0, "prevNodes": null};
     that.reset = function(){
       that.index = 0;
-      that.nextPos = -1;
+      that.nextPos = 0;
       that.currPos = 0;
+      that.prevNodes = null;
+      that.positions.forEach(function(x){
+        console.log("ahoj "+ x.pos + " "+ x.nodes.length);
+      });
     };
     that.findNextPos = function(text){
       var index = that.index;
@@ -94,7 +98,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
       if(that.index > that.nextPos){
         var i = 0;
         var status = that.positions.some(function(a){
-          if(a.pos > that.index) {
+          if(a.pos >= that.index) {
             that.nextPos = a.pos;
             that.currPos = i;
             //console.log("hledame pos " + i);
@@ -127,7 +131,20 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
       return width;
     };
     that.addNodes = function(p, text){
-    
+      if(text){
+        that.findNextPos(text);
+        var nodes = that.getCurrentNodes();
+        if(nodes != that.prevNodes){
+          if(nodes == null){
+            console.log("main");
+          }else{
+            console.log("něco jinýho "+ nodes+ " " + text +" " + that.currPos);
+          }
+        }else{
+          console.log("stejnýi "+ text);
+        }
+        that.prevNodes = nodes;
+      }
     }
     return that;
   };

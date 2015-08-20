@@ -66,6 +66,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
         } else if(main.nodeType == 3){
           var text = main.data;
           positions.push({"pos" : pos, "nodes" : nodes.slice()});
+          console.log("Ukládám pozici pro "+ main.parentNode.tagName+" "+pos);
           arr.push(text);
           pos = pos + text.length;
         }
@@ -82,41 +83,51 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
     console.log(text);
     var that = {"text":  text, "main":main, "positions" : positions, 
       "index": 0, "nextPos":0,"currPos" : 0, "prevNodes": null};
+    that.findNextPos = function(i){
+      return that.positions[i].pos;
+    }
     that.reset = function(){
       that.index = 0;
-      that.nextPos = 0;
+      that.nextPos = that.findNextPos(1);
       that.currPos = 0;
       that.prevNodes = null;
       that.positions.forEach(function(x){
         console.log("ahoj "+ x.pos + " "+ x.nodes.length);
       });
     };
+    that.nextPos = that.findNextPos(1);
+    console.log("Next pos "+ that.nextPos);
     that.findNextPos = function(text){
+      if(text.length==0)return false;
       var index = that.index;
       that.index = that.text.indexOf(text, index);
+      // if string haven't been found, just update
+      // this needs a fix
+      // if(that.index<0) that.index = index;
       // find starting position of next node
-      if(that.index > that.nextPos){
-        var i = 0;
-        var status = that.positions.some(function(a){
-          if(a.pos >= that.index) {
-            that.nextPos = a.pos;
-            that.currPos = i;
-            //console.log("hledame pos " + i);
-            return true;
-          }
-          i++;
-        });
+      if(that.index >= that.nextPos){
+        var i = that.currPos + 1;
+        that.nextPos= that.findNextPos(i);
+        if(!that.nextPos) that.nextPos = that.text.length;
+        that.currPos = i;
+        console.log("hledame pos " + text + " " + i + " "+ index);
       }
+      // console.log("Hledáme "+text+" pos " + that.currPos + " index " + index + " next " + that.nextPos);
     }
     that.getCurrentNodes = function(){
       var i  = that.currPos;
-      return that.positions[i].nodes;
+      if(that.positions && that.positions.length > i ){
+        return that.positions[i].nodes;
+      }else
+        return [];
     }
     that.getCurrentNode = function(){
       var nodes = that.getCurrentNodes();
       if(nodes.length > 0){
+        // console.log("Máme elementy " + that.currPos + " " + that.index);
         return nodes[nodes.length - 1];
       } else {
+        // console.log("Máme main");
         return that.main; 
       }
     }
@@ -126,6 +137,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
       document.body.appendChild(newnode);
       var width = newnode.clientWidth;
       document.body.removeChild(newnode);
+      console.log(newnode.tagName+ " " + text+ " " + that.currPos + " " + that.index + " " + that.nextPos);
       //console.log(that.positions[i].nodes+ " " + i);
       //console.log(that.index+ " " + text);
       return width;
@@ -136,12 +148,12 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
         var nodes = that.getCurrentNodes();
         if(nodes != that.prevNodes){
           if(nodes == null){
-            console.log("main");
+            // console.log("main");
           }else{
-            console.log("něco jinýho "+ nodes+ " " + text +" " + that.currPos);
+            // console.log("něco jinýho "+ nodes+ " " + text +" " + that.currPos);
           }
         }else{
-          console.log("stejnýi "+ text);
+          // console.log("stejnýi "+ text);
         }
         that.prevNodes = nodes;
       }

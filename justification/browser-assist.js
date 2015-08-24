@@ -149,8 +149,8 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
         that.findNextPos(text);
         var nodes = that.getCurrentNodes();
         if(nodes != that.prevNodes){
-          if(nodes == null){
-             console.log("main "+ tex);
+          if(nodes.length == 0 ){
+             console.log("main "+ text);
           }else{
             console.log("něco jinýho "+ nodes+ " " + text +" " + that.currPos);
           }

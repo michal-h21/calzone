@@ -83,19 +83,21 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
     console.log(text);
     var that = {"text":  text, "main":main, "positions" : positions, 
       "index": 0, "nextPos":0,"currPos" : 0, "prevNodes": null};
-    that.findNextPos = function(i){
-      return that.positions[i].pos;
+    that.getNextPos = function(i){
+      if(that.positions[i])
+        return that.positions[i].pos;
+      return that.text.length;
     }
     that.reset = function(){
       that.index = 0;
-      that.nextPos = that.findNextPos(1);
+      that.nextPos = that.getNextPos(1);
       that.currPos = 0;
       that.prevNodes = null;
       that.positions.forEach(function(x){
         console.log("ahoj "+ x.pos + " "+ x.nodes.length);
       });
     };
-    that.nextPos = that.findNextPos(1);
+    that.nextPos = that.getNextPos(1);
     console.log("Next pos "+ that.nextPos);
     that.findNextPos = function(text){
       if(text.length==0)return false;
@@ -107,10 +109,10 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
       // find starting position of next node
       if(that.index >= that.nextPos){
         var i = that.currPos + 1;
-        that.nextPos= that.findNextPos(i);
-        if(!that.nextPos) that.nextPos = that.text.length;
+        that.nextPos= that.getNextPos(i+1);
+        // if(!that.nextPos) that.nextPos = that.text.length;
         that.currPos = i;
-        console.log("hledame pos " + text + " " + i + " "+ index);
+        console.log("hledame pos " + text + " i " + i + " index "+ index + " that.index " + that.index + "next " + that.nextPos );
       }
       // console.log("Hledáme "+text+" pos " + that.currPos + " index " + index + " next " + that.nextPos);
     }
@@ -137,7 +139,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
       document.body.appendChild(newnode);
       var width = newnode.clientWidth;
       document.body.removeChild(newnode);
-      console.log(newnode.tagName+ " " + text+ " " + that.currPos + " " + that.index + " " + that.nextPos);
+      // console.log(newnode.tagName+ " " + text+ " " + that.currPos + " " + that.index + " " + that.nextPos);
       //console.log(that.positions[i].nodes+ " " + i);
       //console.log(that.index+ " " + text);
       return width;
@@ -148,12 +150,12 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
         var nodes = that.getCurrentNodes();
         if(nodes != that.prevNodes){
           if(nodes == null){
-            // console.log("main");
+             console.log("main "+ tex);
           }else{
-            // console.log("něco jinýho "+ nodes+ " " + text +" " + that.currPos);
+            console.log("něco jinýho "+ nodes+ " " + text +" " + that.currPos);
           }
         }else{
-          // console.log("stejnýi "+ text);
+          console.log("stejnýi "+ text+ " " + nodes.length);
         }
         that.prevNodes = nodes;
       }
@@ -221,6 +223,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
         addText(span, n.value);
       }
       else if (n.type === 'glue'){ 
+        textObject.addNodes(span, n.value);
         addText(span, " ");
       }
       else if (n.type === 'penalty' && n.penalty ==

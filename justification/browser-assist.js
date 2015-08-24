@@ -223,7 +223,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
         addText(span, n.value);
       }
       else if (n.type === 'glue'){ 
-        textObject.addNodes(span, n.value);
+        textObject.addNodes(span, " ");
         addText(span, " ");
       }
       else if (n.type === 'penalty' && n.penalty ==

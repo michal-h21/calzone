@@ -31,6 +31,12 @@ var html= function (p, text){
   return p;
 }
 
+var css = function(newnode, properties){
+    for(var key in properties){
+      newnode.style[key] = properties[key];
+    }
+}
+
 function browserAssistTypeset(identifier, type, tolerance, options) {
   // source http://stackoverflow.com/a/7837725
   var arraysIdentical = function(a, b) {
@@ -55,9 +61,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
       "text-indent": "0px",
       display: 'inline', left: '-8000px'
     }
-    for(var key in properties){
-      newnode.style[key] = properties[key];
-    }
+    css(newnode,properties);
     return newnode;
   };
   var walkDOM = function (main) {
@@ -75,7 +79,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
         } else if(main.nodeType == 3){
           var text = main.data;
           positions.push({"pos" : pos, "nodes" : nodes.slice()});
-          console.log("Ukládám pozici pro "+ main.parentNode.tagName+" "+pos);
+          // console.log("Ukládám pozici pro "+ main.parentNode.tagName+" "+pos);
           arr.push(text);
           pos = pos + text.length;
         }
@@ -89,7 +93,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
     }
     loop(main.firstChild, nodeList);
     var text = arr.join("");
-    console.log(text);
+    // console.log(text);
     var that = {"text":  text, "main":main, "positions" : positions, 
       "index": 0, "nextPos":0,"currPos" : 0, "prevNodes": null};
     that.getNextPos = function(i){
@@ -103,11 +107,11 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
       that.currPos = 0;
       that.prevNodes = null;
       that.positions.forEach(function(x){
-        console.log("ahoj "+ x.pos + " "+ x.nodes.length);
+        // console.log("ahoj "+ x.pos + " "+ x.nodes.length);
       });
     };
     that.nextPos = that.getNextPos(1);
-    console.log("Next pos "+ that.nextPos);
+    // console.log("Next pos "+ that.nextPos);
     that.findNextPos = function(text){
       if(text.length==0)return false;
       var index = that.index;
@@ -121,7 +125,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
         that.nextPos= that.getNextPos(i+1);
         // if(!that.nextPos) that.nextPos = that.text.length;
         that.currPos = i;
-        console.log("hledame pos " + text + " i " + i + " index "+ index + " that.index " + that.index + "next " + that.nextPos );
+        // console.log("hledame pos " + text + " i " + i + " index "+ index + " that.index " + that.index + "next " + that.nextPos );
       }
       // console.log("Hledáme "+text+" pos " + that.currPos + " index " + index + " next " + that.nextPos);
     }
@@ -159,15 +163,23 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
         var n = document.createTextNode(t);
         that.currNode.appendChild(n);
       }
+    //   visibility: 'hidden', position: 'absolute',
+    //   top: '-8000px', width: 'auto',
+    //   "text-indent": "0px",
+    //   display: 'inline', left: '-8000px'
+      var properties = {"visibility":"visible", "position":"static",
+        "top":"auto","left":"auto"};
       var setNodes = function(nodes){
         var curr = p;
         var curr = null;
         for(var i=0;i<nodes.length;i++){
           var x = nodes[i].cloneNode();
+          css(x,properties);
           if(curr) curr.appendChild(x);
           curr = x;
         }
         that.currNode = curr;
+        p.appendChild(curr);
         console.log("curr "+ that.currNode);
       }
           
@@ -180,7 +192,7 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
              that.currNode = p;
              // console.log("main "+ text);
           }else{
-            for(var i=0;i<nodes.length;i++)console.log("Máme nodes "+nodes[i]);
+            // for(var i=0;i<nodes.length;i++)console.log("Máme nodes "+nodes[i]);
             setNodes(nodes)
             // console.log("nastavujeme node "+ that.currNode + " " + text);
             // console.log("něco jinýho "+ nodes+ " " + text +" " + that.currPos);

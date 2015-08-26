@@ -164,15 +164,16 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
         if(nodes != that.prevNodes){
           if(nodes.length == 0 ){
              that.currNode = p;
-             console.log("main "+ text);
+             // console.log("main "+ text);
              addTextNode(that.currNode, text);    
           }else{
             setNodes(nodes)
             addTextNode(that.currNode, text);
+            console.log("curr node "+ that.currNode);
             console.log("něco jinýho "+ nodes+ " " + text +" " + that.currPos);
           }
         }else{
-          console.log("stejnýi "+ text+ " " + nodes.length);
+          // console.log("stejnýi "+ text+ " " + nodes.length);
           addTextNode(that.currNode,text);
         }
         that.prevNodes = nodes;

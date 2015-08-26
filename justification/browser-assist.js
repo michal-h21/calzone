@@ -145,17 +145,35 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
       return width;
     };
     that.addNodes = function(p, text){
+      var addTextNode = function(p,t){
+        var n = document.createTextNode(t);
+        p.appendChild(n);
+      }
+      var setNodes = function(nodes){
+        var curr = p;
+        for(var i=0;i<nodes.length;i++){
+          var x = curr.cloneNode();
+          curr.appendChild(x);
+          that.currNode = curr;
+        }
+      }
+          
       if(text){
         that.findNextPos(text);
         var nodes = that.getCurrentNodes();
         if(nodes != that.prevNodes){
           if(nodes.length == 0 ){
+             that.currNode = p;
              console.log("main "+ text);
+             addTextNode(that.currNode, text);    
           }else{
+            setNodes(nodes)
+            addTextNode(that.currNode, text);
             console.log("něco jinýho "+ nodes+ " " + text +" " + that.currPos);
           }
         }else{
           console.log("stejnýi "+ text+ " " + nodes.length);
+          addTextNode(that.currNode,text);
         }
         that.prevNodes = nodes;
       }
@@ -218,13 +236,14 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
     ratio = line.ratio * (line.ratio < 0 ? spaceShrink : spaceStretch);
     var span = makeLine(ratio);
     line.nodes.forEach(function (n,index,array) { 
+      textObject.prevNodes = null;
       if (n.type === 'box'){ 
         textObject.addNodes(span, n.value);
-        addText(span, n.value);
+        // addText(span, n.value);
       }
       else if (n.type === 'glue'){ 
         textObject.addNodes(span, " ");
-        addText(span, " ");
+        // addText(span, " ");
       }
       else if (n.type === 'penalty' && n.penalty ==
           linebreak.defaults.hyphenpenalty && index ==

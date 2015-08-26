@@ -32,6 +32,15 @@ var html= function (p, text){
 }
 
 function browserAssistTypeset(identifier, type, tolerance, options) {
+  // source http://stackoverflow.com/a/7837725
+  var arraysIdentical = function(a, b) {
+    var i = a.length;
+    if (i != b.length) return false;
+    while (i--) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  };
   var hiddenCopy = function(identifier){
     // return $(identifier).clone().css({
     //   visibility: 'hidden', position: 'absolute',
@@ -145,37 +154,41 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
       return width;
     };
     that.addNodes = function(p, text){
-      var addTextNode = function(p,t){
+      if(that.prevNodes==null)that.prevNodes = [];
+      var addTextNode = function(t){
         var n = document.createTextNode(t);
-        p.appendChild(n);
+        that.currNode.appendChild(n);
       }
       var setNodes = function(nodes){
         var curr = p;
+        var curr = null;
         for(var i=0;i<nodes.length;i++){
-          var x = curr.cloneNode();
-          curr.appendChild(x);
-          that.currNode = curr;
+          var x = nodes[i].cloneNode();
+          if(curr) curr.appendChild(x);
+          curr = x;
         }
+        that.currNode = curr;
+        console.log("curr "+ that.currNode);
       }
           
       if(text){
-        that.findNextPos(text);
+        if(text!==" ")that.findNextPos(text);
         var nodes = that.getCurrentNodes();
-        if(nodes != that.prevNodes){
+        if(!arraysIdentical(nodes, that.prevNodes)){
+          // p.appendChild(that.currNode)
           if(nodes.length == 0 ){
              that.currNode = p;
              // console.log("main "+ text);
-             addTextNode(that.currNode, text);    
           }else{
+            for(var i=0;i<nodes.length;i++)console.log("Máme nodes "+nodes[i]);
             setNodes(nodes)
-            addTextNode(that.currNode, text);
-            console.log("curr node "+ that.currNode);
-            console.log("něco jinýho "+ nodes+ " " + text +" " + that.currPos);
+            // console.log("nastavujeme node "+ that.currNode + " " + text);
+            // console.log("něco jinýho "+ nodes+ " " + text +" " + that.currPos);
           }
         }else{
           // console.log("stejnýi "+ text+ " " + nodes.length);
-          addTextNode(that.currNode,text);
         }
+        addTextNode(text);
         that.prevNodes = nodes;
       }
     }
@@ -236,8 +249,9 @@ function browserAssistTypeset(identifier, type, tolerance, options) {
     spaceStretch = spacewidth * 3 / 6;
     ratio = line.ratio * (line.ratio < 0 ? spaceShrink : spaceStretch);
     var span = makeLine(ratio);
+    textObject.currNode = span;
+    textObject.prevNodes = null;
     line.nodes.forEach(function (n,index,array) { 
-      textObject.prevNodes = null;
       if (n.type === 'box'){ 
         textObject.addNodes(span, n.value);
         // addText(span, n.value);
